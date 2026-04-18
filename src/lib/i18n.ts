@@ -1,6 +1,37 @@
 export type Lang = "es" | "en";
 
-export const translations = {
+type Dict = {
+  nav: { protocol: string; arbitration: string; faq: string; cta: string };
+  badge: string;
+  hero: {
+    title1: string; title2: string; subtitle: string;
+    emailPlaceholder: string; cta: string; ctaSent: string; microcopy: string;
+  };
+  contractCard: {
+    tag: string; status: string; project: string; milestone: string;
+    amount: string; escrowed: string; released: string; ref: string;
+  };
+  problem: { eyebrow: string; title: string; copy: string };
+  how: {
+    eyebrow: string; title: string;
+    steps: ReadonlyArray<{ n: string; tag: string; title: string; copy: string }>;
+  };
+  diff: {
+    eyebrow: string; title: string;
+    items: ReadonlyArray<{ k: string; v: string }>;
+  };
+  faq: {
+    eyebrow: string; title: string;
+    items: ReadonlyArray<{ q: string; a: string }>;
+  };
+  waitlist: {
+    eyebrow: string; title: string; copy: string;
+    placeholder: string; cta: string; ctaSent: string;
+  };
+  footer: { tagline: string; links: ReadonlyArray<string>; copy: string };
+};
+
+export const translations: Record<Lang, Dict> = {
   es: {
     nav: {
       protocol: "Protocolo",
@@ -221,9 +252,9 @@ export const translations = {
       copy: "© 2024 Contrata Labs",
     },
   },
-} as const;
+};
 
-export type Translations = (typeof translations)["es"];
+export type Translations = Dict;
 
 export function detectLang(): Lang {
   if (typeof navigator === "undefined") return "es";

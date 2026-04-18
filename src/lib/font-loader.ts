@@ -8,8 +8,9 @@
  */
 export function initFontLoader() {
   if (typeof document === "undefined") return;
-  if (!("fonts" in document)) {
-    document.documentElement.classList.add("fonts-loaded");
+  const doc = document as Document;
+  if (!("fonts" in doc)) {
+    doc.documentElement.classList.add("fonts-loaded");
     return;
   }
 
