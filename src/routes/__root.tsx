@@ -1,26 +1,23 @@
-import { Outlet, createRootRoute, HeadContent, Scripts } from "@tanstack/react-router";
-import { useEffect } from "react";
+import { Outlet, Link, createRootRoute, HeadContent, Scripts } from "@tanstack/react-router";
 
 import appCss from "../styles.css?url";
-import { LangProvider } from "@/lib/lang-context";
-import { initFontLoader } from "@/lib/font-loader";
 
 function NotFoundComponent() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
       <div className="max-w-md text-center">
-        <h1 className="text-7xl font-light text-foreground">404</h1>
+        <h1 className="text-7xl font-bold text-foreground">404</h1>
         <h2 className="mt-4 text-xl font-semibold text-foreground">Page not found</h2>
         <p className="mt-2 text-sm text-muted-foreground">
           The page you're looking for doesn't exist or has been moved.
         </p>
         <div className="mt-6">
-          <a
-            href="/"
-            className="inline-flex items-center justify-center rounded-md bg-laser px-4 py-2 text-sm font-mono uppercase tracking-widest text-background transition-colors hover:opacity-90"
+          <Link
+            to="/"
+            className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
           >
             Go home
-          </a>
+          </Link>
         </div>
       </div>
     </div>
@@ -32,30 +29,23 @@ export const Route = createRootRoute({
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Contrata — Protege tus pagos en contratos freelance" },
-      {
-        name: "description",
-        content:
-          "Escrow inteligente y arbitraje neutral para freelancers y clientes en LATAM. Protege tu dinero antes de contratar a alguien nuevo.",
-      },
-      { name: "author", content: "Contrata" },
-      { property: "og:title", content: "Contrata — Escrow + Arbitraje para freelancers LATAM" },
-      {
-        property: "og:description",
-        content:
-          "Protege tu dinero antes de contratar a alguien nuevo. Escrow inteligente y arbitraje neutral.",
-      },
+      { title: "Lovable App" },
+      { name: "description", content: "Contrata secures freelance payments with escrow and arbitration." },
+      { name: "author", content: "Lovable" },
+      { property: "og:title", content: "Lovable App" },
+      { property: "og:description", content: "Contrata secures freelance payments with escrow and arbitration." },
       { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary_large_image" },
-      { name: "theme-color", content: "#1A1A1A" },
+      { name: "twitter:card", content: "summary" },
+      { name: "twitter:site", content: "@Lovable" },
+      { name: "twitter:title", content: "Lovable App" },
+      { name: "twitter:description", content: "Contrata secures freelance payments with escrow and arbitration." },
+      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/1cf34cf6-aa29-4c63-a15e-1e67e17e4378/id-preview-911e8a9a--2b4d01a4-6e09-4aec-98d0-118fd197ea6a.lovable.app-1776487909666.png" },
+      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/1cf34cf6-aa29-4c63-a15e-1e67e17e4378/id-preview-911e8a9a--2b4d01a4-6e09-4aec-98d0-118fd197ea6a.lovable.app-1776487909666.png" },
     ],
     links: [
-      { rel: "stylesheet", href: appCss },
-      { rel: "preconnect", href: "https://fonts.googleapis.com" },
-      { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
       {
         rel: "stylesheet",
-        href: "https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap",
+        href: appCss,
       },
     ],
   }),
@@ -66,7 +56,7 @@ export const Route = createRootRoute({
 
 function RootShell({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="es">
+    <html lang="en">
       <head>
         <HeadContent />
       </head>
@@ -79,12 +69,5 @@ function RootShell({ children }: { children: React.ReactNode }) {
 }
 
 function RootComponent() {
-  useEffect(() => {
-    initFontLoader();
-  }, []);
-  return (
-    <LangProvider>
-      <Outlet />
-    </LangProvider>
-  );
+  return <Outlet />;
 }
