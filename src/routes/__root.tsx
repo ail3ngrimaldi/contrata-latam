@@ -2,6 +2,8 @@ import { Outlet, Link, createRootRoute, HeadContent, Scripts } from "@tanstack/r
 
 import appCss from "../styles.css?url";
 import { LangProvider } from "@/lib/lang-context";
+import { AppPrivyProvider } from "@/lib/privy-provider";
+import { PrivyLoadingBar } from "@/components/PrivyLoadingBar";
 
 function NotFoundComponent() {
   return (
@@ -71,8 +73,11 @@ function RootShell({ children }: { children: React.ReactNode }) {
 
 function RootComponent() {
   return (
-    <LangProvider>
-      <Outlet />
-    </LangProvider>
+    <AppPrivyProvider>
+      <LangProvider>
+        <PrivyLoadingBar />
+        <Outlet />
+      </LangProvider>
+    </AppPrivyProvider>
   );
 }

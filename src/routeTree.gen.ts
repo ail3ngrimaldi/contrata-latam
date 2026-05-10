@@ -9,38 +9,82 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as DashboardRouteImport } from './routes/dashboard'
+import { Route as CreateContractRouteImport } from './routes/create-contract'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ContractIdRouteImport } from './routes/contract.$id'
 
+const DashboardRoute = DashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CreateContractRoute = CreateContractRouteImport.update({
+  id: '/create-contract',
+  path: '/create-contract',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ContractIdRoute = ContractIdRouteImport.update({
+  id: '/contract/$id',
+  path: '/contract/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/create-contract': typeof CreateContractRoute
+  '/dashboard': typeof DashboardRoute
+  '/contract/$id': typeof ContractIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/create-contract': typeof CreateContractRoute
+  '/dashboard': typeof DashboardRoute
+  '/contract/$id': typeof ContractIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/create-contract': typeof CreateContractRoute
+  '/dashboard': typeof DashboardRoute
+  '/contract/$id': typeof ContractIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths: '/' | '/create-contract' | '/dashboard' | '/contract/$id'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to: '/' | '/create-contract' | '/dashboard' | '/contract/$id'
+  id: '__root__' | '/' | '/create-contract' | '/dashboard' | '/contract/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  CreateContractRoute: typeof CreateContractRoute
+  DashboardRoute: typeof DashboardRoute
+  ContractIdRoute: typeof ContractIdRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/dashboard': {
+      id: '/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof DashboardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/create-contract': {
+      id: '/create-contract'
+      path: '/create-contract'
+      fullPath: '/create-contract'
+      preLoaderRoute: typeof CreateContractRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -48,12 +92,31 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/contract/$id': {
+      id: '/contract/$id'
+      path: '/contract/$id'
+      fullPath: '/contract/$id'
+      preLoaderRoute: typeof ContractIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  CreateContractRoute: CreateContractRoute,
+  DashboardRoute: DashboardRoute,
+  ContractIdRoute: ContractIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { createStart } from '@tanstack/react-start'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+  }
+}
