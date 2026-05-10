@@ -4,40 +4,70 @@
 //     componentTagger (dev-only), VITE_* env injection, @ path alias, React/TanStack dedupe,
 //     error logger plugins, and sandbox detection (port/host/strictPort).
 // You can pass additional config via defineConfig({ vite: { ... } }) if needed.
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 import { defineConfig } from "@lovable.dev/vite-tanstack-config";
 import { nodePolyfills } from "vite-plugin-node-polyfills";
 
-/** Polyfills map node:stream/web → stream-browserify/web, but that path is not a real file. */
-function isStreamBrowserifyWeb(id: string): boolean {
-  const n = id.replace(/\\/g, "/");
-  return n === "stream-browserify/web" || n.endsWith("/stream-browserify/web");
-}
+const streamBrowserifyWebShim = path.resolve(
+  path.dirname(fileURLToPath(import.meta.url)),
+  "stream-browserify-web-shim.js",
+);
 
-const streamBrowserifyWebShim = `
-const g = typeof globalThis !== "undefined" ? globalThis : {};
-export const ReadableStream = g.ReadableStream;
-export const WritableStream = g.WritableStream;
-export const TransformStream = g.TransformStream;
-export const ByteLengthQueuingStrategy = g.ByteLengthQueuingStrategy;
-export const CountQueuingStrategy = g.CountQueuingStrategy;
-export const TextEncoderStream = g.TextEncoderStream;
-export const TextDecoderStream = g.TextDecoderStream;
-`;
+// stream-browserify has no `web` subpath; polyfills map `node:stream/web` → .../stream-browserify/web (ENOENT).
+// TanStack Start builds `client` and `ssr` as separate Vite environments; root `resolve.alias` does not apply to `ssr`.
+const streamWebAliases = [
+  { find: "node:stream/web" as const, replacement: streamBrowserifyWebShim },
+  { find: "stream-browserify/web" as const, replacement: streamBrowserifyWebShim },
+  {
+    find: /[/\\]stream-browserify[/\\]web$/,
+    replacement: streamBrowserifyWebShim,
+  },
+];
 
 export default defineConfig({
   vite: {
-    plugins: [
-      nodePolyfills({ include: ["buffer", "crypto", "stream", "util"] }),
-      {
-        name: "stub-stream-browserify-web",
-        enforce: "pre",
-        resolveId(id) {
-          if (isStreamBrowserifyWeb(id)) return id;
-        },
-        load(id) {
-          if (isStreamBrowserifyWeb(id)) return streamBrowserifyWebShim;
+    resolve: {
+      alias: streamWebAliases,
+    },
+    environments: {
+      ssr: {
+        resolve: {
+          alias: streamWebAliases,
         },
       },
+    },
+    plugins: [
+      nodePolyfills({ include: ["buffer", "crypto", "stream", "util"] }),
     ],
+    build: {
+      rollupOptions: {
+        output: {
+          manualChunks(id) {
+            if (
+              id.includes("@coral-xyz/anchor") ||
+              id.includes("@solana/web3.js")
+            ) {
+              return "vendor-solana-legacy";
+            }
+            if (
+              id.includes("@solana/kit") ||
+              id.includes("@solana-program/")
+            ) {
+              return "vendor-solana-kit";
+            }
+            if (id.includes("@privy-io/")) {
+              return "vendor-privy";
+            }
+            if (id.includes("node_modules/@tanstack/")) {
+              return "vendor-tanstack";
+            }
+            if (id.includes("node_modules/@radix-ui/")) {
+              return "vendor-radix";
+            }
+          },
+        },
+      },
+    },
   },
 });
