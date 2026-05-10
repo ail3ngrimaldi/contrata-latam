@@ -40,7 +40,12 @@ const streamWebShimPlugin: Plugin = {
   },
 };
 
+// On Vercel: disable the Cloudflare Workers plugin; NITRO_PRESET=vercel (set in Vercel dashboard)
+// switches TanStack Start's Nitro output to .vercel/output/ format.
+const isVercel = !!process.env.VERCEL;
+
 export default defineConfig({
+  cloudflare: isVercel ? false : undefined,
   vite: {
     plugins: [
       streamWebShimPlugin,
