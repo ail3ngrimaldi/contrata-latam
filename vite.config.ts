@@ -4,9 +4,13 @@
 //     componentTagger (dev-only), VITE_* env injection, @ path alias, React/TanStack dedupe,
 //     error logger plugins, and sandbox detection (port/host/strictPort).
 // You can pass additional config via defineConfig({ vite: { ... } }) if needed.
+import path from "path";
+import { fileURLToPath } from "url";
 import { defineConfig } from "@lovable.dev/vite-tanstack-config";
 import { nodePolyfills } from "vite-plugin-node-polyfills";
 import type { Plugin } from "vite";
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 // stream-browserify has no `web` subpath; vite-plugin-node-polyfills maps `node:stream/web` →
 // .../stream-browserify/web (ENOENT). This plugin intercepts at resolveId (bare specifiers)
@@ -44,13 +48,43 @@ const streamWebShimPlugin: Plugin = {
 // switches TanStack Start's Nitro output to .vercel/output/ format.
 const isVercel = !!process.env.VERCEL;
 
+// pino (pulled in by @privy-io/react-auth) calls process.hrtime.bigint() at module init time.
+// Cloudflare Workers nodejs_compat does not implement process.hrtime, so the Worker fails
+// validation (error 10021).
+// resolve.alias is used instead of a virtual-module plugin because pino is pulled in through
+// CJS require() chains that bypass Vite's resolveId hook at plugin level.
+const pinoStubPath = path.resolve(__dirname, "pino-stub.js");
+
+const pinoStubPlugin: Plugin = {
+  name: "pino-stub",
+  enforce: "pre",
+  resolveId(id) {
+    if (
+      id === "pino" ||
+      id === "pino-std-serializers" ||
+      id === "pino-abstract-transport" ||
+      id.includes("/pino/") ||
+      id.includes("/pino-")
+    )
+      return pinoStubPath;
+  },
+};
+
 export default defineConfig({
   cloudflare: isVercel ? false : undefined,
   vite: {
     plugins: [
       streamWebShimPlugin,
+      pinoStubPlugin,
       nodePolyfills({ include: ["buffer", "crypto", "stream", "util"] }),
     ],
+    resolve: {
+      alias: {
+        pino: pinoStubPath,
+        "pino-std-serializers": pinoStubPath,
+        "pino-abstract-transport": pinoStubPath,
+      },
+    },
     build: {
       rollupOptions: {
         output: {
