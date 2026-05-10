@@ -9,6 +9,17 @@ import { nodePolyfills } from "vite-plugin-node-polyfills";
 
 export default defineConfig({
   vite: {
-    plugins: [nodePolyfills({ include: ["buffer", "crypto", "stream", "util"] })],
+    plugins: [
+      nodePolyfills({ include: ["buffer", "crypto", "stream", "util"] }),
+      {
+        name: "stub-stream-browserify-web",
+        resolveId(id) {
+          if (id === "stream-browserify/web") return id;
+        },
+        load(id) {
+          if (id === "stream-browserify/web") return "export default {}";
+        },
+      },
+    ],
   },
 });
